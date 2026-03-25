@@ -1,0 +1,108 @@
+---
+title: "Wrapper integration"
+description: "Use the third-party wrapper server to download ALAC and other experimental codecs without Apple Music API limitations."
+---
+
+The [wrapper](https://github.com/WorldObservationLog/wrapper) is a third-party server that removes Apple Music API limitations for experimental codecs. It is required to download songs in ALAC and is recommended for Atmos and other experimental formats.
+
+<Warning>
+  The wrapper is third-party software not developed or maintained by Gamdl. Use it at your own discretion.
+</Warning>
+
+## What the wrapper does
+
+Without the wrapper, experimental codecs such as ALAC fail because the Apple Music API does not expose the decryption keys needed to process those streams. The wrapper provides two services:
+
+- An **account API** that supplies authentication tokens to Gamdl.
+- A **decryption server** that handles DRM decryption for experimental codec streams.
+
+When the wrapper is active, **cookies are not required** — the wrapper handles authentication independently.
+
+## Setup
+
+<Steps>
+  <Step title="Download and start the wrapper server">
+    Follow the installation and startup instructions in the [wrapper repository](https://github.com/WorldObservationLog/wrapper). Once running, the wrapper exposes two local endpoints:
+
+    - Account API (default): `http://127.0.0.1:30020`
+    - Decryption server (default): `127.0.0.1:10020`
+  </Step>
+
+  <Step title="Enable the wrapper in Gamdl">
+    Pass the `--use-wrapper` flag when running Gamdl:
+
+    ```bash
+    gamdl --use-wrapper --song-codec-priority alac "URL"
+    ```
+
+    Or set `use_wrapper = true` in your config file (`~/.gamdl/config.ini` on Linux, `%USERPROFILE%\.gamdl\config.ini` on Windows):
+
+    ```ini
+    use_wrapper = true
+    ```
+  </Step>
+
+  <Step title="Configure the wrapper endpoints (optional)">
+    If you run the wrapper on a different host or port, override the defaults:
+
+    ```bash
+    gamdl --use-wrapper \
+      --wrapper-account-url http://192.168.1.10:30020 \
+      --wrapper-decrypt-ip 192.168.1.10:10020 \
+      "URL"
+    ```
+
+    Or in your config file:
+
+    ```ini
+    wrapper_account_url = http://192.168.1.10:30020
+    wrapper_decrypt_ip = 192.168.1.10:10020
+    ```
+
+    | Option | Default | Description |
+    | --- | --- | --- |
+    | `--wrapper-account-url` | `http://127.0.0.1:30020` | URL of the wrapper account API. |
+    | `--wrapper-decrypt-ip` | `127.0.0.1:10020` | IP and port of the wrapper decryption server. |
+  </Step>
+
+  <Step title="Run Gamdl as usual">
+    Once the wrapper is running and enabled, download normally. No cookies file is needed.
+
+    ```bash
+    gamdl --use-wrapper --song-codec-priority alac "URL"
+    ```
+  </Step>
+</Steps>
+
+## Example commands
+
+**Download lossless ALAC:**
+
+```bash
+gamdl --use-wrapper --song-codec-priority alac "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+**Download Dolby Atmos:**
+
+```bash
+gamdl --use-wrapper --song-codec-priority atmos "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+**Download with Atmos fallback to AAC:**
+
+```bash
+gamdl --use-wrapper --song-codec-priority atmos,aac-legacy "URL"
+```
+
+## How Gamdl connects to the wrapper
+
+When `--use-wrapper` is set, Gamdl calls `AppleMusicApi.create_from_wrapper()` instead of `create_from_netscape_cookies()`. This contacts the wrapper account API to retrieve authentication tokens, then uses the wrapper decryption server to decrypt streams for experimental codecs.
+
+The two wrapper endpoints serve distinct roles:
+
+- **Account URL** (`--wrapper-account-url`): Gamdl sends a request here on startup to fetch `music_token` and `dev_token` for authenticating Apple Music API calls.
+- **Decrypt IP** (`--wrapper-decrypt-ip`): During download, encrypted audio is sent to this address for DRM decryption.
+
+<Note>
+  When the wrapper is active, you do not need a `cookies.txt` file. If both are provided, the wrapper takes precedence.
+</Note>

@@ -1,0 +1,80 @@
+---
+title: 'Introduction'
+description: 'Gamdl is a command-line tool for downloading Apple Music songs, music videos, and post videos with high quality audio, rich metadata, and synced lyrics.'
+keywords: ['gamdl', 'apple music', 'downloader', 'cli', 'songs', 'music videos']
+---
+
+Gamdl (Glomatico's Apple Music Downloader) is a command-line application that lets you download content from Apple Music. It supports songs, music videos, post videos, albums, playlists, and entire artist catalogs — with automatic metadata tagging, synced lyrics, and extensive configuration options.
+
+## What you can download
+
+Gamdl supports the following Apple Music URL types:
+
+- **Songs** — Individual tracks from any album or single
+- **Albums** — Full albums, including public storefront albums and your library albums
+- **Playlists** — Public Apple Music playlists and playlists saved to your library
+- **Music Videos** — Official music videos in resolutions up to 4K
+- **Artists** — All albums or music videos from a given artist page
+- **Post Videos** — Short-form video content posted by artists
+- **Apple Music Classical** — Classical music catalog available through Apple Music
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="High-quality audio" icon="music">
+    Download songs in AAC 256kbps (`aac-legacy`) by default. Experimental codecs include Dolby Atmos, AC3, ALAC, and AAC-HE — available via the Wrapper.
+  </Card>
+  <Card title="High-quality music videos" icon="video">
+    Download music videos in H.264 or H.265 at resolutions from 240p up to 4K (2160p with H.265).
+  </Card>
+  <Card title="Synced lyrics" icon="captions">
+    Download time-synced lyrics in LRC, SRT, or native TTML (Apple Music format) alongside your audio files.
+  </Card>
+  <Card title="Rich metadata" icon="tag">
+    Tracks are automatically tagged with album, artist, composer, disc/track numbers, cover art, genre, and more.
+  </Card>
+  <Card title="Artist downloads" icon="user">
+    Download an artist's full discography — main albums, compilations, live albums, singles, EPs, top songs, or music videos — with an interactive selection prompt.
+  </Card>
+  <Card title="Highly configurable" icon="sliders">
+    Control output paths, filename templates, codec priority, cover format, lyrics format, download mode, and more via CLI flags or a persistent config file.
+  </Card>
+</CardGroup>
+
+## Authentication modes
+
+Gamdl supports two ways to authenticate with Apple Music:
+
+**Cookies (default)** — Export your browser cookies in Netscape format while logged in to [music.apple.com](https://music.apple.com) with an active subscription. Place the file as `cookies.txt` in your working directory, or point to it with `--cookies-path`. This is the standard mode and works for all stable codecs.
+
+**Wrapper** — The [Wrapper](https://github.com/WorldObservationLog/wrapper) is a separate server that handles authentication and decryption, enabling access to experimental codecs such as ALAC, Dolby Atmos, and AC3 without API limitations. Enable it with `--use-wrapper`. Cookies are not required when using the Wrapper.
+
+## Prerequisites
+
+### Required
+
+- **Python 3.10 or higher** — Gamdl requires a modern Python runtime.
+- **Active Apple Music subscription** — Downloads are gated to accounts with a valid subscription. Gamdl will exit early if no active subscription is detected.
+- **Cookies in Netscape format** — Required for the default authentication mode. Export them from Firefox or Chrome while logged in to music.apple.com.
+
+### Optional tools
+
+These tools extend Gamdl's capabilities. Add them to your system `PATH` or point to them via the corresponding CLI flags.
+
+<CardGroup cols={2}>
+  <Card title="FFmpeg" icon="film" href="https://ffmpeg.org/download.html">
+    Required for the `ffmpeg` music video remux mode (the default). Also required when using the `nm3u8dlre` download mode.
+  </Card>
+  <Card title="mp4decrypt (Bento4)" icon="lock-open" href="https://www.bento4.com/downloads/">
+    Required for the `mp4box` music video remux mode, and for downloading non-legacy song codecs (any codec other than `aac-legacy` and `aac-he-legacy`).
+  </Card>
+  <Card title="MP4Box (GPAC)" icon="box" href="https://gpac.io/downloads/gpac-nightly-builds/">
+    Required for the `mp4box` music video remux mode. Preserves closed caption tracks and some additional metadata that the `ffmpeg` mode strips.
+  </Card>
+  <Card title="N_m3u8DL-RE" icon="bolt" href="https://github.com/nilaoda/N_m3u8DL-RE/releases/latest">
+    An alternative download engine for the `nm3u8dlre` download mode. Significantly faster than the default `ytdlp` downloader for HLS streams.
+  </Card>
+  <Card title="Wrapper" icon="shield" href="https://github.com/WorldObservationLog/wrapper">
+    A local server that bypasses Apple Music API limitations to enable experimental codecs: ALAC (lossless), Dolby Atmos, AC3, and binaural/downmix variants. Cookies are not needed when using Wrapper.
+  </Card>
+</CardGroup>

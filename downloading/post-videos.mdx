@@ -1,0 +1,55 @@
+---
+title: "Downloading post videos"
+description: "Download artist-uploaded post videos from Apple Music."
+---
+
+Post videos are short videos uploaded directly by artists to their Apple Music profiles. They are distinct from music videos — they are not DRM-protected and do not require decryption, making the download process simpler and faster.
+
+## Basic usage
+
+```bash
+gamdl "https://music.apple.com/us/post/1234567890"
+```
+
+<Note>
+Post video URLs use the `post` path segment: `music.apple.com/us/post/<id>`. If you are unsure whether a URL is a post video or a music video, post video URLs never contain the `music-video` segment.
+</Note>
+
+## Quality
+
+Use `--uploaded-video-quality` to control which quality level is downloaded.
+
+| Value | Description |
+|---|---|
+| `best` | Highest available quality — up to 1080p with AAC 256 kbps audio — **default** |
+| `ask` | Prompts you to select a quality tier interactively |
+
+```bash
+gamdl --uploaded-video-quality ask "https://music.apple.com/us/post/1234567890"
+```
+
+## Output format
+
+Post videos are downloaded using yt-dlp and saved in the format provided by Apple (typically `.mp4`). The output file is placed in the configured output directory, tagged with available metadata.
+
+<Tip>
+Post videos do not use the `--music-video-remux-mode`, `--music-video-remux-format`, or `--music-video-codec-priority` options. Those options apply only to music videos.
+</Tip>
+
+## Differences from music videos
+
+| Feature | Post videos | Music videos |
+|---|---|---|
+| DRM protection | No | Yes |
+| Decryption required | No | Yes (mp4decrypt or FFmpeg) |
+| Maximum resolution | 1080p | Up to 4K (H.265) |
+| Remux options | None | `ffmpeg` or `mp4box` |
+| Download tool | yt-dlp | yt-dlp or N_m3u8DL-RE |
+
+## Save cover art
+
+Pass `--save-cover` to save the thumbnail as a standalone image file alongside the video.
+
+```bash
+gamdl --save-cover "https://music.apple.com/us/post/1234567890"
+```

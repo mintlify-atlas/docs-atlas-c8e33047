@@ -1,0 +1,107 @@
+---
+title: "Config file"
+description: "How Gamdl loads, reads, and writes its INI configuration file."
+---
+
+Gamdl stores persistent settings in an INI config file. On first run, the file is created automatically with every option set to its default value. You can edit it at any time — no restart is required because Gamdl reads the file once at startup.
+
+## File location
+
+| Platform      | Default path                          |
+| ------------- | ------------------------------------- |
+| Linux / macOS | `~/.gamdl/config.ini`                 |
+| Windows       | `%USERPROFILE%\.gamdl\config.ini`     |
+
+<Tip>
+Use `--config-path` to load a different config file. This is useful if you manage multiple accounts or have separate profiles for different download workflows.
+</Tip>
+
+## Skipping the config file
+
+Pass `--no-config-file` (short form `-n`) to ignore the config file entirely for a single run. Gamdl will use built-in defaults and any other flags you supply on the command line.
+
+```bash
+gamdl --no-config-file "https://music.apple.com/..."
+```
+
+## File format
+
+The file uses standard INI syntax. All Gamdl settings live under the `[gamdl]` section. Option names match the long form of each CLI flag with hyphens replaced by underscores and no leading dashes.
+
+**Mapping example:**
+
+| CLI flag                     | Config key                  |
+| ---------------------------- | --------------------------- |
+| `--output-path`              | `output_path`               |
+| `--song-codec-priority`      | `song_codec_priority`       |
+| `--music-video-remux-mode`   | `music_video_remux_mode`    |
+| `--no-synced-lyrics`         | `no_synced_lyrics`          |
+
+## Sample config.ini
+
+Below is a representative config file showing common settings. Every option defaults to the values shown here unless you change them.
+
+```ini
+[gamdl]
+cookies_path = ./cookies.txt
+output_path = ./Apple Music
+temp_path = .
+log_level = INFO
+language = en-US
+download_mode = ytdlp
+cover_format = jpg
+cover_size = 1200
+overwrite = false
+save_cover = false
+save_playlist = false
+use_wrapper = false
+wrapper_account_url = http://127.0.0.1:30020
+wrapper_decrypt_ip = 127.0.0.1:10020
+nm3u8dlre_path = N_m3u8DL-RE
+mp4decrypt_path = mp4decrypt
+ffmpeg_path = ffmpeg
+mp4box_path = MP4Box
+song_codec_priority = aac-legacy
+synced_lyrics_format = lrc
+no_synced_lyrics = false
+synced_lyrics_only = false
+use_album_date = false
+fetch_extra_tags = false
+music_video_codec_priority = h264,h265
+music_video_remux_mode = ffmpeg
+music_video_remux_format = m4v
+music_video_resolution = 1080p
+uploaded_video_quality = best
+album_folder_template = {album_artist}/{album}
+compilation_folder_template = Compilations/{album}
+no_album_folder_template = {artist}/Unknown Album
+single_disc_file_template = {track:02d} {title}
+multi_disc_file_template = {disc}-{track:02d} {title}
+no_album_file_template = {title}
+playlist_file_template = Playlists/{playlist_artist}/{playlist_title}
+date_tag_template = %Y-%m-%dT%H:%M:%SZ
+exclude_tags = null
+truncate = null
+```
+
+## How CLI flags and config interact
+
+Command-line arguments always take precedence over config file values. If you pass `--output-path /tmp/music` on the command line, Gamdl uses `/tmp/music` for that run regardless of what `output_path` is set to in the config file.
+
+The order of precedence is:
+
+1. Command-line arguments
+2. Config file values
+3. Built-in defaults
+
+## Automatic file management
+
+Gamdl manages the config file for you:
+
+- **New options** — When you upgrade Gamdl and new options are added, they are automatically appended to your config file with their default values on the next run.
+- **Removed options** — Keys that no longer correspond to a known option are automatically removed from the file to keep it clean.
+- **Parent directories** — If the config directory does not exist, Gamdl creates it automatically.
+
+<Note>
+Gamdl uses the `[gamdl]` section name. If that section is absent from an existing file, it is added automatically. Other sections in the same file are left untouched.
+</Note>

@@ -1,0 +1,86 @@
+---
+title: "Artists & playlists"
+description: "Download all content from an Apple Music artist page or playlist."
+---
+
+Gamdl can download entire artist catalogs and playlists — both public and from your library — in a single command.
+
+## Downloading from an artist page
+
+```bash
+gamdl "https://music.apple.com/us/artist/rick-astley/669771"
+```
+
+When you run a command with an artist URL and no `--artist-auto-select` flag, Gamdl presents an interactive prompt listing the available content categories. Use the controls below to make your selection.
+
+| Key | Action |
+|---|---|
+| Arrow keys | Move selection |
+| Space | Toggle item |
+| Ctrl+A | Select all |
+| Enter | Confirm and start downloading |
+
+## Auto-selecting content
+
+Pass `--artist-auto-select` to skip the interactive prompt and automatically download a specific category.
+
+```bash
+gamdl --artist-auto-select main-albums "https://music.apple.com/us/artist/rick-astley/669771"
+```
+
+| Value | Description |
+|---|---|
+| `main-albums` | Studio and main release albums |
+| `compilation-albums` | Compilation albums |
+| `live-albums` | Live albums |
+| `singles-eps` | Singles and EPs |
+| `all-albums` | Every album in the catalog |
+| `top-songs` | Artist's top songs |
+| `music-videos` | All music videos |
+
+## Downloading playlists
+
+**Public playlist:**
+
+```bash
+gamdl "https://music.apple.com/us/playlist/todays-hits/pl.f4d106fed2bd41149aaacabb233eb5eb"
+```
+
+**Library playlist** (requires cookies from the account that owns the playlist):
+
+```bash
+gamdl "https://music.apple.com/library/playlist/p.abcdefg12345"
+```
+
+<Note>
+Library playlists are private to your account. Your `cookies.txt` must be from the same Apple ID that owns the playlist. See [Installation](/installation) for details on exporting cookies.
+</Note>
+
+## Saving an M3U8 playlist file
+
+Pass `--save-playlist` to generate an M3U8 file alongside the downloaded tracks. The playlist file lists all tracks in the correct order and can be opened in most media players.
+
+```bash
+gamdl --save-playlist "https://music.apple.com/us/playlist/todays-hits/pl.f4d106fed2bd41149aaacabb233eb5eb"
+```
+
+The M3U8 file is saved next to the tracks using the path defined by `--playlist-file-template` (default: `Playlists/{playlist_artist}/{playlist_title}`).
+
+## Batch downloading multiple artists or playlists
+
+Pass multiple URLs in a single command:
+
+```bash
+gamdl "https://music.apple.com/us/artist/rick-astley/669771" \
+      "https://music.apple.com/us/artist/a-ha/106069"
+```
+
+Or collect URLs in a text file and use `--read-urls-as-txt`:
+
+```bash
+gamdl --read-urls-as-txt artists.txt
+```
+
+<Tip>
+Combine `--artist-auto-select` with `--read-urls-as-txt` to fully automate batch downloads without any interactive prompts.
+</Tip>

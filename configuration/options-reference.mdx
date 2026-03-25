@@ -1,0 +1,212 @@
+---
+title: "Options reference"
+description: "Complete reference for every Gamdl CLI option, organized by category."
+---
+
+This page lists every option accepted by the `gamdl` command. All options can also be set in the [config file](/configuration/config-file) using the equivalent key name (hyphens replaced by underscores, no leading dashes).
+
+---
+
+## General options
+
+| Option | Short | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--read-urls-as-txt` | `-r` | Treat each URL argument as a path to a plain-text file containing one URL per line. | `false` |
+| `--config-path` | — | Path to the INI config file. The file is created automatically if it does not exist. | `~/.gamdl/config.ini` |
+| `--log-level` | — | Minimum severity level for log output. One of `DEBUG`, `INFO`, `WARNING`, `ERROR`. | `INFO` |
+| `--log-file` | — | Write log output to this file in addition to the terminal. | — |
+| `--no-exceptions` | — | Suppress exception tracebacks in the output. | `false` |
+| `--no-config-file` | `-n` | Skip loading the config file for this run. | `false` |
+
+---
+
+## Apple Music options
+
+| Option | Short | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--cookies-path` | `-c` | Path to a Netscape-format cookies file exported while logged in to Apple Music. | `./cookies.txt` |
+| `--wrapper-account-url` | — | Base URL of the wrapper account server used when `--use-wrapper` is enabled. | `http://127.0.0.1:30020` |
+| `--language` | `-l` | ISO 639-1 language tag for metadata (e.g. `en-US`, `ja-JP`, `pt-BR`). Language selection does not always apply to music videos. | `en-US` |
+
+---
+
+## Output options
+
+| Option | Short | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--output-path` | `-o` | Root directory where downloaded files are saved. | `./Apple Music` |
+| `--temp-path` | — | Directory used for in-progress downloads and intermediate files. | `.` |
+| `--wvd-path` | — | Path to a `.wvd` Widevine device file. When omitted, a hardcoded device is used. | — |
+| `--overwrite` | — | Overwrite files that already exist at the output path. | `false` |
+| `--save-cover` | `-s` | Save the album cover as a separate image file alongside the audio. | `false` |
+| `--save-playlist` | — | Save an M3U8 playlist file when downloading a playlist. | `false` |
+
+---
+
+## Download options
+
+| Option | Short | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--artist-auto-select` | — | Automatically select the given content type when downloading an artist URL, skipping the interactive prompt. See valid values below. | — |
+| `--nm3u8dlre-path` | — | Path to the `N_m3u8DL-RE` executable (or the executable name if it is on `PATH`). | `N_m3u8DL-RE` |
+| `--mp4decrypt-path` | — | Path to the `mp4decrypt` executable. Required for all music video downloads. | `mp4decrypt` |
+| `--ffmpeg-path` | — | Path to the `ffmpeg` executable. Required for the `ffmpeg` remux mode and `nm3u8dlre` download mode. | `ffmpeg` |
+| `--mp4box-path` | — | Path to the `MP4Box` executable. Required for the `mp4box` remux mode. | `MP4Box` |
+| `--use-wrapper` | — | Route downloads through the wrapper server to access ALAC and other experimental codecs without API limitations. | `false` |
+| `--wrapper-decrypt-ip` | — | IP address and port of the wrapper decryption server. | `127.0.0.1:10020` |
+| `--download-mode` | — | Underlying download engine. `ytdlp` uses yt-dlp; `nm3u8dlre` uses N_m3u8DL-RE (faster). | `ytdlp` |
+| `--cover-format` | — | Format for cover art. `raw` saves the original file without embedding — requires `--save-cover`. | `jpg` |
+
+<AccordionGroup>
+  <Accordion title="--artist-auto-select values">
+    | Value | Content selected |
+    | ----- | ---------------- |
+    | `main-albums` | Studio albums |
+    | `compilation-albums` | Compilation albums |
+    | `live-albums` | Live albums |
+    | `singles-eps` | Singles and EPs |
+    | `all-albums` | All album types combined |
+    | `top-songs` | Top songs |
+    | `music-videos` | Music videos |
+  </Accordion>
+
+  <Accordion title="--download-mode values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `ytdlp` | Default. Uses yt-dlp, no additional dependencies required. |
+    | `nm3u8dlre` | Uses N_m3u8DL-RE. Faster for large downloads. Requires `N_m3u8DL-RE` and `ffmpeg` on `PATH` or set via their respective path options. |
+  </Accordion>
+
+  <Accordion title="--cover-format values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `jpg` | JPEG. Embedded in the media file and optionally saved separately. |
+    | `png` | PNG. Embedded in the media file and optionally saved separately. |
+    | `raw` | Original format as provided by Apple. Not embedded in the media file — requires `--save-cover` to be enabled. |
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Template options
+
+See [File & Folder Templates](/configuration/templates) for a complete guide to the template system and variable reference.
+
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `--album-folder-template` | Folder path template for albums. | `{album_artist}/{album}` |
+| `--compilation-folder-template` | Folder path template for compilation albums. | `Compilations/{album}` |
+| `--no-album-folder-template` | Folder path template for tracks with no associated album. | `{artist}/Unknown Album` |
+| `--single-disc-file-template` | File name template for single-disc releases. | `{track:02d} {title}` |
+| `--multi-disc-file-template` | File name template for multi-disc releases. | `{disc}-{track:02d} {title}` |
+| `--no-album-file-template` | File name template for tracks with no associated album. | `{title}` |
+| `--playlist-file-template` | File path template for playlist M3U8 files. | `Playlists/{playlist_artist}/{playlist_title}` |
+| `--date-tag-template` | `strftime` format string used when writing the date metadata tag. | `%Y-%m-%dT%H:%M:%SZ` |
+| `--exclude-tags` | Comma-separated list of tag names to omit when writing metadata. Use `all` to skip tagging entirely. | — |
+| `--cover-size` | Width and height in pixels of the cover image fetched from Apple. | `1200` |
+| `--truncate` | Maximum number of characters allowed in a file or folder name segment. When unset, no truncation is applied. | — |
+
+---
+
+## Song options
+
+| Option | Short | Description | Default |
+| ------ | ----- | ----------- | ------- |
+| `--song-codec-priority` | — | Comma-separated list of codecs to try, in order of preference. The first codec that is available for the track is used. | `aac-legacy` |
+| `--synced-lyrics-format` | — | Container format for downloaded synced lyrics. | `lrc` |
+| `--no-synced-lyrics` | — | Skip downloading synced lyrics. | `false` |
+| `--synced-lyrics-only` | — | Download only synced lyrics — skip downloading the audio file. | `false` |
+| `--use-album-date` | — | Use the album release date for the track's date tag instead of the track's own release date. | `false` |
+| `--fetch-extra-tags` | — | Fetch additional tags from the preview stream (normalization gain and smooth playback values). | `false` |
+
+<AccordionGroup>
+  <Accordion title="--song-codec-priority values">
+    **Stable codecs** (recommended):
+
+    | Value | Description |
+    | ----- | ----------- |
+    | `aac-legacy` | AAC 256 kbps 44.1 kHz |
+    | `aac-he-legacy` | AAC-HE 64 kbps 44.1 kHz |
+
+    **Experimental codecs** (may fail due to API limitations — use `--use-wrapper` to improve availability):
+
+    | Value | Description |
+    | ----- | ----------- |
+    | `aac` | AAC 256 kbps up to 48 kHz |
+    | `aac-he` | AAC-HE 64 kbps up to 48 kHz |
+    | `aac-binaural` | AAC 256 kbps binaural |
+    | `aac-downmix` | AAC 256 kbps downmix |
+    | `aac-he-binaural` | AAC-HE 64 kbps binaural |
+    | `aac-he-downmix` | AAC-HE 64 kbps downmix |
+    | `atmos` | Dolby Atmos 768 kbps |
+    | `ac3` | AC3 640 kbps |
+    | `alac` | ALAC up to 24-bit/192 kHz (currently unsupported) |
+    | `ask` | Interactive prompt to choose an experimental codec for each track |
+
+    Multiple values can be provided as a comma-separated list: `--song-codec-priority atmos,aac-legacy`
+  </Accordion>
+
+  <Accordion title="--synced-lyrics-format values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `lrc` | LRC format. Widely supported by media players. |
+    | `srt` | SubRip format. More precise timing than LRC. |
+    | `ttml` | Native Apple Music TTML format. Not compatible with most media players. |
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Music video options
+
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `--music-video-codec-priority` | Comma-separated list of codecs to try, in order of preference. | `h264,h265` |
+| `--music-video-remux-mode` | Tool used to remux the downloaded streams into the final container. | `ffmpeg` |
+| `--music-video-remux-format` | Output container format for remuxed music videos. | `m4v` |
+| `--music-video-resolution` | Maximum resolution to download. If the requested resolution is unavailable, the next lower resolution is used. | `1080p` |
+
+<AccordionGroup>
+  <Accordion title="--music-video-codec-priority values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `h264` | H.264. Available up to 1080p. |
+    | `h265` | H.265/HEVC. Required for 1440p and 2160p. |
+    | `ask` | Interactive prompt to choose a codec for each video. |
+  </Accordion>
+
+  <Accordion title="--music-video-remux-mode values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `ffmpeg` | Use FFmpeg. Requires `ffmpeg` on `PATH` or via `--ffmpeg-path`. |
+    | `mp4box` | Use MP4Box. Preserves the original closed-caption track and some additional metadata. Requires `mp4decrypt` and `MP4Box`. |
+  </Accordion>
+
+  <Accordion title="--music-video-remux-format values">
+    | Value | Description |
+    | ----- | ----------- |
+    | `m4v` | Apple's video container format. |
+    | `mp4` | Standard MPEG-4 container. |
+  </Accordion>
+
+  <Accordion title="--music-video-resolution values">
+    | Value | Notes |
+    | ----- | ----- |
+    | `240p` | H.264 only |
+    | `360p` | H.264 only |
+    | `480p` | H.264 only |
+    | `540p` | H.264 only |
+    | `720p` | H.264 only |
+    | `1080p` | H.264 and H.265 |
+    | `1440p` | H.265 only |
+    | `2160p` | H.265 only — requires `h265` in `--music-video-codec-priority` |
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Post video options
+
+| Option | Description | Default |
+| ------ | ----------- | ------- |
+| `--uploaded-video-quality` | Quality to download for post (uploaded) videos. `best` selects up to 1080p with AAC 256 kbps. `ask` presents an interactive prompt. | `best` |

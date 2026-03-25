@@ -1,0 +1,99 @@
+---
+title: "Audio & Video Codecs"
+description: "Reference for all supported audio and video codecs, codec priority configuration, and download examples."
+---
+
+Gamdl supports a range of audio codecs for songs and two video codecs for music videos. You control which codec is used through the `--song-codec-priority` and `--music-video-codec-priority` options.
+
+## Song codecs
+
+Song codecs are divided into two groups: **stable** codecs that work reliably with cookies alone, and **experimental** codecs that may require the [wrapper](/advanced/wrapper) or are subject to Apple Music API limitations.
+
+### Stable codecs
+
+| Codec | Description | Notes |
+| --- | --- | --- |
+| `aac-legacy` | AAC 256kbps 44.1kHz | Default. Most compatible with media players. |
+| `aac-he-legacy` | AAC-HE 64kbps 44.1kHz | Low-bandwidth alternative. |
+
+These codecs use a legacy decryption path that works reliably without the wrapper.
+
+### Experimental codecs
+
+<Warning>
+  Experimental codecs may fail due to Apple Music API limitations when used without the wrapper. `alac` always requires the wrapper. See [Wrapper integration](/advanced/wrapper) for setup instructions.
+</Warning>
+
+| Codec | Description | Notes |
+| --- | --- | --- |
+| `aac` | AAC 256kbps up to 48kHz | Higher sample rate than `aac-legacy`. |
+| `aac-he` | AAC-HE 64kbps up to 48kHz | Higher sample rate than `aac-he-legacy`. |
+| `aac-binaural` | AAC 256kbps binaural | Spatial audio processed for headphones. |
+| `aac-downmix` | AAC 256kbps downmix | Stereo downmix of spatial audio. |
+| `aac-he-binaural` | AAC-HE 64kbps binaural | Low-bandwidth binaural. |
+| `aac-he-downmix` | AAC-HE 64kbps downmix | Low-bandwidth downmix. |
+| `atmos` | Dolby Atmos 768kbps | Full spatial audio stream. |
+| `ac3` | AC3 640kbps | Dolby Digital surround sound. |
+| `alac` | ALAC up to 24-bit/192kHz | Lossless. **Requires wrapper.** |
+| `ask` | Interactive selection | Prompts you to choose a codec at runtime. |
+
+## Music video codecs
+
+| Codec | Description | Notes |
+| --- | --- | --- |
+| `h264` | H.264 | Broadest compatibility. Max resolution: 1080p. |
+| `h265` | H.265 | Better compression. Enables 1440p and 2160p. |
+| `ask` | Interactive selection | Prompts you to choose at runtime. |
+
+Use `--music-video-resolution` to cap the resolution. H.265-only resolutions (`1440p`, `2160p`) are only available when using the `h265` codec.
+
+## Codec priority
+
+The `--song-codec-priority` and `--music-video-codec-priority` options accept a comma-separated list of codecs in priority order. Gamdl tries each codec in order and uses the first one that succeeds.
+
+```bash
+# Try aac-legacy first, fall back to aac if unavailable
+gamdl --song-codec-priority aac-legacy,aac "URL"
+
+# Try h265 first, fall back to h264
+gamdl --music-video-codec-priority h265,h264 "URL"
+```
+
+This is useful when you prefer a higher-quality codec but want a reliable fallback. The default song codec priority is `aac-legacy`.
+
+You can also set this in your config file:
+
+```ini
+song_codec_priority = aac-legacy,aac
+music_video_codec_priority = h265,h264
+```
+
+## Examples
+
+**Download with Dolby Atmos:**
+
+```bash
+gamdl --use-wrapper --song-codec-priority atmos "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+**Download lossless ALAC (requires wrapper):**
+
+```bash
+gamdl --use-wrapper --song-codec-priority alac "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+**Download with interactive codec selection:**
+
+```bash
+gamdl --song-codec-priority ask "URL"
+```
+
+**Download a music video in 4K (H.265):**
+
+```bash
+gamdl --music-video-codec-priority h265 --music-video-resolution 2160p "URL"
+```
+
+<Note>
+  When using `ask`, Gamdl presents an interactive prompt listing available codecs for the track. Use arrow keys to select and press Enter to confirm.
+</Note>

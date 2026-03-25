@@ -1,97 +1,76 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Gamdl"
+description: "A command-line tool for downloading Apple Music songs, music videos, and post videos with rich metadata tagging."
 ---
 
-## Setting up
-
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install Gamdl via pip and set up your Apple Music cookies in minutes.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Download your first song or album with a single command.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Configuration" icon="gear" href="/configuration/config-file">
+    Customize output paths, codecs, templates, and more.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Embedding" icon="code" href="/advanced/embedding">
+    Use Gamdl as a Python library in your own projects.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What is Gamdl?
 
-Everything you need to create world-class documentation.
+Gamdl (Glomatico's Apple Music Downloader) is an open-source command-line tool that lets you download songs, music videos, and post videos from Apple Music. It supports a wide range of audio codecs — from standard AAC to lossless ALAC and Dolby Atmos — and can download music videos at resolutions up to 4K.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+Gamdl automatically tags downloaded files with comprehensive metadata (album art, artist, track number, lyrics, and more) and gives you full control over file naming and organization through customizable templates.
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="High-quality audio" icon="music">
+    Download songs in AAC 256kbps, AAC-HE, Dolby Atmos, AC3, and lossless ALAC via the wrapper.
+  </Card>
+  <Card title="4K music videos" icon="video">
+    Download music videos in H.264 or H.265 at resolutions up to 2160p (4K).
+  </Card>
+  <Card title="Synced lyrics" icon="microphone">
+    Fetch time-synced lyrics in LRC, SRT, or native TTML format.
+  </Card>
+  <Card title="Rich metadata" icon="tag">
+    Automatic tagging with album art, composer, disc/track numbers, genre, and more.
+  </Card>
+  <Card title="Flexible templates" icon="folder">
+    Customize folder structure and filenames using template variables like `{artist}`, `{album}`, `{title}`.
+  </Card>
+  <Card title="Artist & playlist support" icon="list">
+    Download entire artist catalogs, albums, playlists, or individual tracks.
+  </Card>
+</CardGroup>
+
+## Supported URL types
+
+Gamdl accepts Apple Music URLs for the following content types:
+
+- Songs
+- Albums (public and library)
+- Playlists (public and library)
+- Music videos
+- Artists
+- Post videos
+- Apple Music Classical
+
+## Requirements
+
+Before using Gamdl, you need:
+
+- **Python 3.10 or higher**
+- **An active Apple Music subscription**
+- **Browser cookies** exported in Netscape format from the Apple Music website
+
+<Note>
+  Gamdl requires valid Apple Music cookies from a logged-in account with an active subscription. Without a subscription, downloads will not work.
+</Note>
+
+## License
+
+Gamdl is released under the [MIT License](https://github.com/glomatico/gamdl/blob/main/LICENSE).

@@ -1,0 +1,132 @@
+---
+title: "Downloading music videos"
+description: "Download Apple Music music videos in H.264 or H.265, up to 4K resolution."
+---
+
+Gamdl supports downloading DRM-protected music videos from Apple Music. Videos are decrypted and remuxed into a standard container using either FFmpeg or MP4Box.
+
+## Basic usage
+
+```bash
+gamdl "https://music.apple.com/us/music-video/TITLE/ID"
+```
+
+**Download in 4K with H.265:**
+
+```bash
+gamdl --music-video-codec-priority h265 --music-video-resolution 2160p "https://music.apple.com/us/music-video/TITLE/ID"
+```
+
+## Dependencies
+
+Music video downloads require external tools depending on the remux mode you choose.
+
+All music video downloads require `mp4decrypt` regardless of remux mode. Additional tools depend on the mode chosen:
+
+| Remux mode | Required tools |
+|---|---|
+| `ffmpeg` (default) | [mp4decrypt](https://www.bento4.com/downloads/) and [FFmpeg](https://ffmpeg.org/download.html) |
+| `mp4box` | [mp4decrypt](https://www.bento4.com/downloads/) and [MP4Box](https://gpac.io/downloads/gpac-nightly-builds/) |
+
+Make sure the required executables are available on your system `PATH`, or specify their paths using `--ffmpeg-path`, `--mp4decrypt-path`, and `--mp4box-path`.
+
+## Codec
+
+Use `--music-video-codec-priority` to set one or more codecs in priority order (comma-separated). Gamdl tries each in order and uses the first available.
+
+```bash
+# Try H.265 first, fall back to H.264
+gamdl --music-video-codec-priority h265,h264 "URL"
+```
+
+| Value | Description |
+|---|---|
+| `h264` | H.264 (AVC) — broadly compatible |
+| `h265` | H.265 (HEVC) — required for 1440p and 4K |
+| `ask` | Prompts you to select a codec interactively |
+
+<Note>
+`h264` is tried before `h265` by default (`h264,h265`). To prefer H.265, set `--music-video-codec-priority h265,h264`.
+</Note>
+
+## Resolution
+
+Use `--music-video-resolution` to set the maximum resolution. Gamdl selects the closest available resolution at or below this value.
+
+<Tabs>
+  <Tab title="H.264 resolutions">
+    | Value | Description |
+    |---|---|
+    | `240p` | 240p |
+    | `360p` | 360p |
+    | `480p` | 480p |
+    | `540p` | 540p |
+    | `720p` | 720p HD |
+    | `1080p` | 1080p Full HD — **default** |
+  </Tab>
+  <Tab title="H.265 resolutions">
+    H.265 supports all H.264 resolutions plus:
+
+    | Value | Description |
+    |---|---|
+    | `1440p` | 1440p QHD |
+    | `2160p` | 2160p 4K UHD |
+  </Tab>
+</Tabs>
+
+<Warning>
+1440p and 2160p are only available with H.265. If you request these resolutions with H.264 codec priority only, the download will fall back to the highest available H.264 resolution.
+</Warning>
+
+```bash
+# Download up to 4K in H.265
+gamdl --music-video-codec-priority h265 --music-video-resolution 2160p "URL"
+```
+
+## Remux mode
+
+After decryption, the separate audio and video tracks are combined (remuxed) into a single file. Use `--music-video-remux-mode` to choose the tool.
+
+| Value | Description |
+|---|---|
+| `ffmpeg` | Uses FFmpeg — **default** |
+| `mp4box` | Uses MP4Box — preserves the original closed caption track and some metadata |
+
+```bash
+gamdl --music-video-remux-mode mp4box "URL"
+```
+
+<Tip>
+Use `mp4box` mode if the music video has closed captions that you want to preserve, or if you notice metadata differences with the default FFmpeg mode.
+</Tip>
+
+## Output format
+
+Use `--music-video-remux-format` to set the container format for the output file.
+
+| Value | Extension | Notes |
+|---|---|---|
+| `m4v` | `.m4v` | iTunes-style container — **default** |
+| `mp4` | `.mp4` | Standard MPEG-4 container |
+
+```bash
+gamdl --music-video-remux-format mp4 "URL"
+```
+
+## Faster downloads with N_m3u8DL-RE
+
+By default, Gamdl uses yt-dlp to download streams. You can switch to [N_m3u8DL-RE](https://github.com/nilaoda/N_m3u8DL-RE/releases/latest) for faster parallel segment downloads.
+
+```bash
+gamdl --download-mode nm3u8dlre "URL"
+```
+
+Make sure `N_m3u8DL-RE` is on your `PATH` or specify the path with `--nm3u8dlre-path`.
+
+## Save cover art
+
+Pass `--save-cover` to save the thumbnail as a standalone file alongside the video. See [Downloading songs](/downloading/songs#save-cover-art-as-a-separate-file) for available `--cover-format` values.
+
+```bash
+gamdl --save-cover "URL"
+```

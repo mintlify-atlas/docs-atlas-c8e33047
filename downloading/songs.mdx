@@ -1,0 +1,144 @@
+---
+title: "Downloading songs"
+description: "Download Apple Music songs and albums in AAC, Dolby Atmos, ALAC, and more."
+---
+
+Gamdl can download individual songs, full albums, and everything in between. Pass one or more Apple Music URLs as arguments and Gamdl handles the rest.
+
+## Basic usage
+
+**Download a single song:**
+
+```bash
+gamdl "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+**Download a full album:**
+
+```bash
+gamdl "https://music.apple.com/us/album/whenever-you-need-somebody-2022-remaster/1624945511"
+```
+
+**Download multiple URLs at once:**
+
+```bash
+gamdl "URL1" "URL2" "URL3"
+```
+
+**Read URLs from a text file (one URL per line):**
+
+```bash
+gamdl --read-urls-as-txt urls.txt
+```
+
+<Tip>
+Text file mode is useful for batch jobs. Put one Apple Music URL per line in a plain `.txt` file and pass the file path as the argument.
+</Tip>
+
+## Choosing a codec
+
+Use `--song-codec-priority` to specify one or more codecs in priority order (comma-separated). Gamdl tries each codec in order and uses the first one that returns a valid stream.
+
+```bash
+gamdl --song-codec-priority atmos "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+```
+
+```bash
+# Try Atmos first, fall back to standard AAC
+gamdl --song-codec-priority atmos,aac-legacy "URL"
+```
+
+### Available codecs
+
+<Tabs>
+  <Tab title="Stable">
+    These codecs work reliably without any extra setup.
+
+    | Codec | Value | Details |
+    |---|---|---|
+    | AAC 256 kbps (legacy) | `aac-legacy` | 256 kbps, 44.1 kHz — **default** |
+    | AAC-HE 64 kbps (legacy) | `aac-he-legacy` | 64 kbps, 44.1 kHz |
+  </Tab>
+  <Tab title="Experimental">
+    These codecs may fail depending on your account region or API availability. Some require a [Wrapper](/advanced/wrapper) to download.
+
+    | Codec | Value | Details |
+    |---|---|---|
+    | AAC 256 kbps | `aac` | Up to 48 kHz |
+    | AAC-HE 64 kbps | `aac-he` | Up to 48 kHz |
+    | AAC 256 kbps binaural | `aac-binaural` | Binaural mix |
+    | AAC 256 kbps downmix | `aac-downmix` | Stereo downmix |
+    | AAC-HE 64 kbps binaural | `aac-he-binaural` | Binaural mix |
+    | AAC-HE 64 kbps downmix | `aac-he-downmix` | Stereo downmix |
+    | Dolby Atmos | `atmos` | 768 kbps spatial audio |
+    | AC3 | `ac3` | 640 kbps Dolby Digital |
+    | ALAC | `alac` | Lossless, up to 24-bit/192 kHz — requires Wrapper |
+    | Interactive selection | `ask` | Prompts you to pick a codec at runtime |
+  </Tab>
+</Tabs>
+
+<Warning>
+Experimental codecs are subject to API limitations and may not be available for every track or region. `alac` cannot be downloaded without a [Wrapper](/advanced/wrapper) because Apple's standard API does not serve lossless streams directly.
+</Warning>
+
+## Synced lyrics
+
+Gamdl downloads synced lyrics by default alongside each song. Use `--synced-lyrics-format` to control the output format.
+
+| Format | Flag value | Notes |
+|---|---|---|
+| LRC | `lrc` | Most compatible — **default** |
+| SubRip | `srt` | More accurate timestamp precision |
+| TTML | `ttml` | Native Apple Music format; not supported by most players |
+
+```bash
+gamdl --synced-lyrics-format srt "URL"
+```
+
+**Skip lyrics entirely:**
+
+```bash
+gamdl --no-synced-lyrics "URL"
+```
+
+**Download only the lyrics file, skip the audio:**
+
+```bash
+gamdl --synced-lyrics-only "URL"
+```
+
+## Extra options
+
+### Use album release date for singles
+
+By default, each track is tagged with its own release date. Pass `--use-album-date` to use the parent album's release date instead. This is useful for keeping singles grouped with their album in music players.
+
+```bash
+gamdl --use-album-date "URL"
+```
+
+### Fetch extra tags from preview
+
+Pass `--fetch-extra-tags` to retrieve normalization and smooth playback tags from the iTunes preview track. These tags improve volume normalization and gapless playback in supporting players.
+
+```bash
+gamdl --fetch-extra-tags "URL"
+```
+
+### Save cover art as a separate file
+
+Pass `--save-cover` to save the album artwork as a standalone file in the same folder as the downloaded tracks. Use `--cover-format` to set the image format.
+
+```bash
+gamdl --save-cover --cover-format png "URL"
+```
+
+| Format | Value | Notes |
+|---|---|---|
+| JPEG | `jpg` | **Default** |
+| PNG | `png` | Lossless |
+| Raw | `raw` | Original format from Apple — only saved to disk, not embedded in tracks |
+
+<Note>
+`raw` cover format disables cover embedding. Use it only when you need the original image file exactly as Apple serves it.
+</Note>

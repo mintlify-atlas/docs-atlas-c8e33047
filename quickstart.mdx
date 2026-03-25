@@ -1,80 +1,101 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: 'Quickstart'
+description: 'Download your first track with Gamdl in under a minute.'
+keywords: ['gamdl', 'quickstart', 'download', 'apple music', 'usage', 'examples']
 ---
 
-## Get started in three steps
+This page walks through the most common Gamdl commands. Make sure you have [installed Gamdl](/installation) and placed your `cookies.txt` file in your working directory before continuing.
 
-Get your documentation site running locally and make your first customization.
+## Basic syntax
 
-### Step 1: Set up your local environment
+```bash
+gamdl [OPTIONS] URLS...
+```
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+You can pass one or more Apple Music URLs. Wrap each URL in quotes to avoid your shell interpreting special characters.
 
-### Step 2: Deploy your changes
+## Common commands
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+<Steps>
+  <Step title="Check the version">
+    Confirm Gamdl is installed and check its version:
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```bash
+    gamdl --version
+    ```
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="View all options">
+    Print the full help output with all available flags:
 
-### Step 3: Go live
+    ```bash
+    gamdl --help
+    ```
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Download a single song">
+    Pass a song URL (one that includes `?i=` — the track identifier in an album URL):
+
+    ```bash
+    gamdl "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+    ```
+
+    The file is saved to `./Apple Music/` by default, organized as `{album_artist}/{album}/{track:02d} {title}.m4a`.
+  </Step>
+
+  <Step title="Download a full album">
+    Pass an album URL (without a `?i=` parameter) to download every track:
+
+    ```bash
+    gamdl "https://music.apple.com/us/album/whenever-you-need-somebody-2022-remaster/1624945511"
+    ```
+  </Step>
+
+  <Step title="Download from an artist page">
+    Pass an artist URL to open an interactive selection prompt:
+
+    ```bash
+    gamdl "https://music.apple.com/us/artist/rick-astley/669771"
+    ```
+
+    Gamdl fetches the artist's catalog and presents a list. Use the following controls to make your selection:
+
+    | Key | Action |
+    | --- | --- |
+    | Arrow keys | Move the cursor up and down |
+    | Space | Toggle the item under the cursor |
+    | Ctrl + A | Select all items |
+    | Enter | Confirm selection and start downloading |
+
+    To skip the prompt and download a specific category automatically, use `--artist-auto-select`:
+
+    ```bash
+    gamdl --artist-auto-select main-albums "https://music.apple.com/us/artist/rick-astley/669771"
+    ```
+
+    Valid values for `--artist-auto-select` are: `main-albums`, `compilation-albums`, `live-albums`, `singles-eps`, `all-albums`, `top-songs`, `music-videos`.
+  </Step>
+
+  <Step title="Specify a cookies file">
+    If your cookies file is not named `cookies.txt` or is not in the working directory, use `--cookies-path`:
+
+    ```bash
+    gamdl --cookies-path /path/to/cookies.txt "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+    ```
+  </Step>
+
+  <Step title="Change the output directory">
+    Use `--output-path` to save downloads to a specific folder:
+
+    ```bash
+    gamdl --output-path /music "https://music.apple.com/us/album/whenever-you-need-somebody-2022-remaster/1624945511"
+    ```
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
-</CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+- Set persistent defaults by editing the config file at `~/.gamdl/config.ini` (Linux) or `%USERPROFILE%\.gamdl\config.ini` (Windows). The file is created automatically on the first run.
+- Use the `--song-codec-priority` flag to request a different audio codec, or enable the Wrapper to access lossless ALAC and Dolby Atmos.
+- Pass `--synced-lyrics-format srt` or `--synced-lyrics-format ttml` to change the lyrics format from the default LRC.
+- Download multiple URLs in a single command by separating them with spaces, or use `--read-urls-as-txt` (`-r`) to read URLs from a plain text file.

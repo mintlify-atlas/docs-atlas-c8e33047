@@ -1,0 +1,77 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "Gamdl",
+  "projectDescription": "A command-line tool for downloading Apple Music songs, music videos, and post videos with rich metadata tagging and support for multiple codecs.",
+  "theme": "palm",
+  "primaryColor": "#94cb04",
+  "lightColor": "#545454",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/config-file",
+              "configuration/options-reference",
+              "configuration/templates"
+            ]
+          },
+          {
+            "group": "Downloading",
+            "pages": [
+              "downloading/songs",
+              "downloading/music-videos",
+              "downloading/post-videos",
+              "downloading/artists-and-playlists"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/codecs",
+              "advanced/wrapper",
+              "advanced/embedding",
+              "advanced/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Download Apple Music songs in AAC 256kbps, AAC-HE, Dolby Atmos, ALAC, and more codecs",
+    "Download music videos in resolutions up to 4K (H.264/H.265)",
+    "Synced lyrics download in LRC, SRT, or TTML formats",
+    "Rich automatic metadata tagging with cover art embedding",
+    "Artist, album, playlist, and post video support",
+    "Highly customizable file/folder naming templates",
+    "Wrapper integration for experimental codecs without API limitations",
+    "Embeddable as a Python library"
+  ],
+  "publicApiSurface": [
+    "gamdl [OPTIONS] URLS...",
+    "AppleMusicApi.create_from_netscape_cookies()",
+    "AppleMusicApi.create_from_wrapper()",
+    "ItunesApi(storefront, language)",
+    "AppleMusicInterface",
+    "AppleMusicSongInterface",
+    "AppleMusicMusicVideoInterface",
+    "AppleMusicUploadedVideoInterface",
+    "AppleMusicBaseDownloader",
+    "AppleMusicSongDownloader",
+    "AppleMusicMusicVideoDownloader",
+    "AppleMusicUploadedVideoDownloader",
+    "AppleMusicDownloader"
+  ]
+}

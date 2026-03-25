@@ -1,0 +1,147 @@
+---
+title: "Troubleshooting"
+description: "Solutions to common errors and issues when using Gamdl."
+---
+
+## Common issues
+
+<AccordionGroup>
+  <Accordion title='"No active Apple Music subscription found"'>
+    Gamdl checks `apple_music_api.active_subscription` on startup. If it returns `False`, one of the following applies:
+
+    - Your cookies have expired. Re-export them from the Apple Music website while actively logged in.
+    - The cookies file does not contain the `media-user-token` cookie for `music.apple.com`. Make sure you export cookies from `music.apple.com`, not a subdomain.
+    - The account does not have an active Apple Music subscription.
+
+    **Fix:** Log in to [music.apple.com](https://music.apple.com), export your cookies in Netscape format using a browser extension, and replace your existing `cookies.txt`.
+  </Accordion>
+
+  <Accordion title='"Could not connect to wrapper account API"'>
+    Gamdl cannot reach the wrapper server at the configured account URL.
+
+    - Confirm the wrapper server is running before starting Gamdl.
+    - Check that the `--wrapper-account-url` matches the address and port the wrapper is listening on (default: `http://127.0.0.1:30020`).
+    - Check that no firewall or security software is blocking the connection.
+
+    ```bash
+    gamdl --use-wrapper --wrapper-account-url http://127.0.0.1:30020 "URL"
+    ```
+  </Accordion>
+
+  <Accordion title="External tool not found (N_m3u8DL-RE, FFmpeg, mp4decrypt, MP4Box)">
+    Gamdl cannot locate a required external binary in your system `PATH`.
+
+    - Add the tool's directory to your system `PATH`, or
+    - Specify the full path with the corresponding option:
+
+    | Tool | Option |
+    | --- | --- |
+    | N_m3u8DL-RE | `--nm3u8dlre-path` |
+    | FFmpeg | `--ffmpeg-path` |
+    | mp4decrypt | `--mp4decrypt-path` |
+    | MP4Box | `--mp4box-path` |
+
+    ```bash
+    gamdl --ffmpeg-path /usr/local/bin/ffmpeg "URL"
+    ```
+
+    You can also set these in your config file:
+
+    ```ini
+    ffmpeg_path = /usr/local/bin/ffmpeg
+    mp4decrypt_path = /usr/local/bin/mp4decrypt
+    ```
+  </Accordion>
+
+  <Accordion title="Music videos not downloading">
+    Music video downloads always require `mp4decrypt`. Depending on the remux mode, additional tools are needed:
+
+    - **FFmpeg remux mode** (default): `mp4decrypt` and `ffmpeg` must be installed and in your `PATH`.
+    - **MP4Box remux mode**: `mp4decrypt` and `MP4Box` must be installed and in your `PATH`.
+
+    If any required tool is missing, Gamdl logs a warning and skips music video downloads.
+
+    Install the required tools and make sure they are accessible:
+
+    ```bash
+    ffmpeg -version
+    mp4decrypt --version
+    MP4Box -version
+    ```
+  </Accordion>
+
+  <Accordion title="Experimental codec not working">
+    Codecs such as `alac`, `atmos`, `ac3`, `aac`, and the binaural/downmix variants are experimental and depend on Apple Music API access that is not always available through standard cookies.
+
+    - **ALAC always requires the wrapper.** There is no workaround.
+    - For other experimental codecs, try enabling the wrapper with `--use-wrapper`.
+    - As a fallback, use a stable codec such as `aac-legacy`:
+
+    ```bash
+    gamdl --use-wrapper --song-codec-priority alac,aac-legacy "URL"
+    ```
+
+    See [Wrapper integration](/advanced/wrapper) for setup instructions.
+  </Accordion>
+
+  <Accordion title="Synced lyrics not available">
+    Not every track on Apple Music has synced (time-stamped) lyrics.
+
+    - Use `--no-synced-lyrics` to skip synced lyrics and only download the audio file.
+    - Try a different format with `--synced-lyrics-format`. Available values are `lrc`, `srt`, and `ttml`.
+
+    ```bash
+    gamdl --no-synced-lyrics "URL"
+    gamdl --synced-lyrics-format srt "URL"
+    ```
+  </Accordion>
+
+  <Accordion title="Content restricted or not downloadable">
+    If Gamdl logs a warning about account restrictions at startup, your Apple Music account has content restrictions enabled (for example, explicit content filtering).
+
+    - Disable content restrictions in your Apple Music account settings, then re-export your cookies.
+    - Some content may simply not be available in your storefront or region. The storefront is determined by your Apple Music account — try using cookies from a different account or region.
+  </Accordion>
+
+  <Accordion title="File already exists and is not being overwritten">
+    By default, Gamdl skips files that already exist at the destination path.
+
+    Use `--overwrite` to force Gamdl to re-download and replace existing files:
+
+    ```bash
+    gamdl --overwrite "URL"
+    ```
+
+    Or set it in your config file:
+
+    ```ini
+    overwrite = true
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Logging and diagnostics
+
+Gamdl uses Python's standard `logging` module. You can control verbosity and log output with the following options.
+
+**Increase log verbosity:**
+
+```bash
+gamdl --log-level DEBUG "URL"
+```
+
+Available levels: `DEBUG`, `INFO`, `WARNING`, `ERROR`. `DEBUG` prints detailed information about API requests, decryption keys, and file operations, which is useful for diagnosing unexpected failures.
+
+**Save logs to a file:**
+
+```bash
+gamdl --log-level DEBUG --log-file gamdl.log "URL"
+```
+
+**Suppress exception stack traces:**
+
+```bash
+gamdl --no-exceptions "URL"
+```
+
+This shows only the error message without the full traceback. Useful in automated scripts where verbose exceptions are not needed.

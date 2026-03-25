@@ -1,0 +1,284 @@
+---
+title: "File & folder templates"
+description: "Customize how Gamdl names and organizes downloaded files using Python-style format strings."
+---
+
+Gamdl uses Python format strings to build file paths and folder names for every downloaded item. You can customize these templates using CLI flags or [config file](/configuration/config-file) keys to match your preferred library layout.
+
+## How templates work
+
+A template is a string that contains one or more placeholder variables wrapped in curly braces, such as `{album_artist}` or `{track:02d}`. When Gamdl downloads a file, it resolves each placeholder using metadata fetched from Apple Music, then sanitizes illegal filesystem characters before writing the path.
+
+Folder levels are separated by `/` in the template string. The final segment becomes the file name; everything before it becomes the directory structure under `--output-path`.
+
+```
+{album_artist}/{album}/{track:02d} {title}
+         ↓           ↓         ↓
+  Rick Astley / Whenever You Need Somebody / 01 Never Gonna Give You Up.m4a
+```
+
+## Template variables
+
+The following variables are available for use in path and file name templates.
+
+| Variable | Description |
+| -------- | ----------- |
+| `{album}` | Album name |
+| `{album_artist}` | Album artist name |
+| `{album_id}` | Apple Music album ID |
+| `{artist}` | Track artist name |
+| `{artist_id}` | Apple Music artist ID |
+| `{composer}` | Composer name |
+| `{composer_id}` | Apple Music composer ID |
+| `{date}` | Release date — supports `strftime` format specifiers (see below) |
+| `{disc}` | Disc number |
+| `{disc_total}` | Total number of discs in the release |
+| `{media_type}` | Media type string (e.g. `Song`, `Music Video`) |
+| `{playlist_artist}` | Curator name of the playlist |
+| `{playlist_id}` | Apple Music playlist ID |
+| `{playlist_title}` | Playlist name |
+| `{playlist_track}` | Track's position index within the playlist |
+| `{title}` | Track title |
+| `{title_id}` | Apple Music track ID |
+| `{track}` | Track number — supports Python integer format specifiers (see below) |
+| `{track_total}` | Total number of tracks in the release |
+
+### Formatting numbers
+
+Use standard Python format specifiers inside the braces to control how numbers are rendered.
+
+```
+{track:02d}   → zero-padded two-digit integer: 01, 02, … 12
+{disc}        → plain integer: 1, 2, 3
+```
+
+### Formatting dates
+
+The `{date}` variable supports `strftime` format codes after a colon.
+
+```
+{date}         → full date string as stored in metadata
+{date:%Y}      → four-digit year only: 2024
+{date:%Y-%m}   → year and month: 2024-11
+```
+
+## Template options and defaults
+
+Each template option controls a different part of the output path.
+
+<AccordionGroup>
+  <Accordion title="--album-folder-template">
+    **Default:** `{album_artist}/{album}`
+
+    Used for the folder path of a standard (non-compilation) album track.
+
+    ```ini
+    album_folder_template = {album_artist}/{album}
+    ```
+
+    **Example output:**
+    ```
+    Apple Music/Rick Astley/Whenever You Need Somebody/
+    ```
+  </Accordion>
+
+  <Accordion title="--compilation-folder-template">
+    **Default:** `Compilations/{album}`
+
+    Used when the track's `compilation` tag is set to true.
+
+    ```ini
+    compilation_folder_template = Compilations/{album}
+    ```
+
+    **Example output:**
+    ```
+    Apple Music/Compilations/Now That's What I Call Music! 100/
+    ```
+  </Accordion>
+
+  <Accordion title="--no-album-folder-template">
+    **Default:** `{artist}/Unknown Album`
+
+    Used when the track has no associated album.
+
+    ```ini
+    no_album_folder_template = {artist}/Unknown Album
+    ```
+
+    **Example output:**
+    ```
+    Apple Music/Rick Astley/Unknown Album/
+    ```
+  </Accordion>
+
+  <Accordion title="--single-disc-file-template">
+    **Default:** `{track:02d} {title}`
+
+    Used for the file name of a track on a single-disc release.
+
+    ```ini
+    single_disc_file_template = {track:02d} {title}
+    ```
+
+    **Example output:**
+    ```
+    01 Never Gonna Give You Up.m4a
+    ```
+  </Accordion>
+
+  <Accordion title="--multi-disc-file-template">
+    **Default:** `{disc}-{track:02d} {title}`
+
+    Used for the file name of a track on a multi-disc release.
+
+    ```ini
+    multi_disc_file_template = {disc}-{track:02d} {title}
+    ```
+
+    **Example output:**
+    ```
+    1-01 Never Gonna Give You Up.m4a
+    ```
+  </Accordion>
+
+  <Accordion title="--no-album-file-template">
+    **Default:** `{title}`
+
+    Used for the file name of a track with no associated album.
+
+    ```ini
+    no_album_file_template = {title}
+    ```
+
+    **Example output:**
+    ```
+    Never Gonna Give You Up.m4a
+    ```
+  </Accordion>
+
+  <Accordion title="--playlist-file-template">
+    **Default:** `Playlists/{playlist_artist}/{playlist_title}`
+
+    Used for the path of the M3U8 playlist file when `--save-playlist` is enabled. The `.m3u8` extension is appended automatically.
+
+    ```ini
+    playlist_file_template = Playlists/{playlist_artist}/{playlist_title}
+    ```
+
+    **Example output:**
+    ```
+    Apple Music/Playlists/Apple Music/Today's Hits.m3u8
+    ```
+  </Accordion>
+
+  <Accordion title="--date-tag-template">
+    **Default:** `%Y-%m-%dT%H:%M:%SZ`
+
+    Controls the format of the `date` metadata tag written into the downloaded file. Uses `strftime` format codes. This is separate from using `{date}` in path templates.
+
+    ```ini
+    date_tag_template = %Y-%m-%dT%H:%M:%SZ
+    ```
+
+    **Examples:**
+
+    | Template | Output |
+    | -------- | ------ |
+    | `%Y-%m-%dT%H:%M:%SZ` | `1987-11-16T00:00:00Z` (default) |
+    | `%Y-%m-%d` | `1987-11-16` |
+    | `%Y` | `1987` |
+  </Accordion>
+</AccordionGroup>
+
+## Excluding metadata tags
+
+Use `--exclude-tags` with a comma-separated list of tag names to omit specific fields when writing metadata to downloaded files.
+
+```bash
+gamdl --exclude-tags cover,lyrics "https://music.apple.com/..."
+```
+
+The following tag names are recognized:
+
+**Available in templates and `--exclude-tags`:**
+`album`, `album_artist`, `album_id`, `artist`, `artist_id`, `composer`, `composer_id`, `date`, `disc`, `disc_total`, `media_type`, `playlist_artist`, `playlist_id`, `playlist_title`, `playlist_track`, `title`, `title_id`, `track`, `track_total`
+
+**Available in `--exclude-tags` only:**
+`album_sort`, `artist_sort`, `composer_sort`, `title_sort`, `comment`, `compilation`, `copyright`, `cover`, `gapless`, `genre`, `genre_id`, `lyrics`, `rating`, `storefront`, `xid`
+
+**Special value:**
+`all` — skip all tagging entirely. No metadata is written to the downloaded file.
+
+```bash
+# Skip all metadata tagging
+gamdl --exclude-tags all "https://music.apple.com/..."
+
+# Keep everything except the cover art and lyrics
+gamdl --exclude-tags cover,lyrics "https://music.apple.com/..."
+```
+
+## Truncating long file names
+
+<Note>
+Some operating systems impose a maximum file name length (commonly 255 bytes on Linux and macOS). If your template produces long names — particularly with verbose album or artist names — you may need to set `--truncate`.
+</Note>
+
+The `--truncate` option sets the maximum number of characters for any single file or folder name segment produced by a template. The extension is preserved; only the base name is shortened.
+
+```bash
+# Limit all name segments to 100 characters
+gamdl --truncate 100 "https://music.apple.com/..."
+```
+
+In your config file:
+
+```ini
+truncate = 100
+```
+
+When `truncate` is `null` (the default), no truncation is applied.
+
+## Real-world examples
+
+### Organize by year and album
+
+```bash
+gamdl \
+  --album-folder-template "{album_artist}/{date:%Y} - {album}" \
+  --single-disc-file-template "{track:02d} {title}" \
+  "https://music.apple.com/us/album/..."
+```
+
+**Output:**
+```
+Apple Music/Rick Astley/1987 - Whenever You Need Somebody/01 Never Gonna Give You Up.m4a
+```
+
+### Flat structure with artist prefix
+
+```bash
+gamdl \
+  --album-folder-template "{artist}" \
+  --single-disc-file-template "{album} - {track:02d} - {title}" \
+  "https://music.apple.com/us/album/..."
+```
+
+**Output:**
+```
+Apple Music/Rick Astley/Whenever You Need Somebody - 01 - Never Gonna Give You Up.m4a
+```
+
+### Save playlist with custom path
+
+```bash
+gamdl \
+  --save-playlist \
+  --playlist-file-template "Playlists/{playlist_title}" \
+  "https://music.apple.com/us/playlist/..."
+```
+
+**Output:**
+```
+Apple Music/Playlists/Today's Hits.m3u8
+```

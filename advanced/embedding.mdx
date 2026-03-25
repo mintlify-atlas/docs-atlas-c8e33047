@@ -1,0 +1,171 @@
+---
+title: "Embedding Gamdl"
+description: "Use Gamdl as a Python library in your own projects by importing its API, interface, and downloader classes directly."
+---
+
+Gamdl exposes a public Python API that you can use to drive downloads programmatically. All major components are importable from the `gamdl.api`, `gamdl.interface`, and `gamdl.downloader` packages.
+
+## Architecture overview
+
+Gamdl is structured in three layers:
+
+- **API layer** (`gamdl.api`): Handles authentication and raw HTTP calls to the Apple Music and iTunes APIs.
+  - `AppleMusicApi` — authenticates via cookies or the wrapper, fetches song/album/playlist/artist metadata, and exchanges DRM licenses.
+  - `ItunesApi` — fetches supplementary data (e.g., release dates) from the iTunes Search API.
+
+- **Interface layer** (`gamdl.interface`): Wraps the API layer and provides typed metadata, stream info, lyrics, and cover art.
+  - `AppleMusicInterface` — base interface; cover art, decryption keys, media dates.
+  - `AppleMusicSongInterface` — song metadata, lyrics, stream URL selection per codec.
+  - `AppleMusicMusicVideoInterface` — music video metadata and stream selection.
+  - `AppleMusicUploadedVideoInterface` — post video metadata and stream selection.
+
+- **Downloader layer** (`gamdl.downloader`): Orchestrates downloads, decryption, tagging, and file placement.
+  - `AppleMusicBaseDownloader` — shared file I/O, path generation, tagging, and CDM setup.
+  - `AppleMusicSongDownloader` — downloads and decrypts songs, writes lyrics.
+  - `AppleMusicMusicVideoDownloader` — downloads and remuxes music videos.
+  - `AppleMusicUploadedVideoDownloader` — downloads post videos.
+  - `AppleMusicDownloader` — top-level orchestrator; parses URLs, builds a download queue, and routes each item to the right downloader.
+
+## Full example
+
+The following example reproduces the embedding workflow shown in the Gamdl README. It authenticates using a cookies file, builds the full downloader stack, and downloads a single song.
+
+```python
+import asyncio
+
+from gamdl.api import AppleMusicApi, ItunesApi
+from gamdl.downloader import (
+    AppleMusicBaseDownloader,
+    AppleMusicDownloader,
+    AppleMusicMusicVideoDownloader,
+    AppleMusicSongDownloader,
+    AppleMusicUploadedVideoDownloader,
+)
+from gamdl.interface import (
+    AppleMusicInterface,
+    AppleMusicMusicVideoInterface,
+    AppleMusicSongInterface,
+    AppleMusicUploadedVideoInterface,
+)
+
+async def main():
+    # Create AppleMusicApi instance (from cookies or wrapper)
+    apple_music_api = await AppleMusicApi.create_from_netscape_cookies(
+        cookies_path="cookies.txt",
+    )
+    itunes_api = ItunesApi(
+        apple_music_api.storefront,
+        apple_music_api.language,
+    )
+
+    # Check subscription
+    assert apple_music_api.active_subscription
+
+    # Set up interfaces
+    interface = AppleMusicInterface(apple_music_api, itunes_api)
+    song_interface = AppleMusicSongInterface(interface)
+    music_video_interface = AppleMusicMusicVideoInterface(interface)
+    uploaded_video_interface = AppleMusicUploadedVideoInterface(interface)
+
+    # Set up base downloader and specialized downloaders
+    base_downloader = AppleMusicBaseDownloader()
+    song_downloader = AppleMusicSongDownloader(
+        base_downloader=base_downloader,
+        interface=song_interface,
+    )
+    music_video_downloader = AppleMusicMusicVideoDownloader(
+        base_downloader=base_downloader,
+        interface=music_video_interface,
+    )
+    uploaded_video_downloader = AppleMusicUploadedVideoDownloader(
+        base_downloader=base_downloader,
+        interface=uploaded_video_interface,
+    )
+
+    # Main downloader
+    downloader = AppleMusicDownloader(
+        interface=interface,
+        base_downloader=base_downloader,
+        song_downloader=song_downloader,
+        music_video_downloader=music_video_downloader,
+        uploaded_video_downloader=uploaded_video_downloader,
+    )
+
+    # Download a song
+    url = "https://music.apple.com/us/album/never-gonna-give-you-up-2022-remaster/1624945511?i=1624945512"
+    url_info = downloader.get_url_info(url)
+    if url_info:
+        download_queue = await downloader.get_download_queue(url_info)
+        if download_queue:
+            for download_item in download_queue:
+                await downloader.download(download_item)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## Authenticating with the wrapper
+
+If you want to use the [wrapper](/advanced/wrapper) instead of cookies, replace `create_from_netscape_cookies` with `create_from_wrapper`:
+
+```python
+apple_music_api = await AppleMusicApi.create_from_wrapper(
+    wrapper_account_url="http://127.0.0.1:30020/",
+)
+```
+
+The wrapper account URL defaults to `http://127.0.0.1:30020/`. No cookies file is needed when using the wrapper.
+
+## Key public exports
+
+### `gamdl.api`
+
+| Class | Description |
+| --- | --- |
+| `AppleMusicApi` | Authenticates with Apple Music and exposes methods for fetching songs, albums, playlists, artists, music videos, and DRM license exchange. |
+| `ItunesApi` | Fetches supplementary metadata from the iTunes Search API, such as release dates. |
+
+### `gamdl.interface`
+
+| Class | Description |
+| --- | --- |
+| `AppleMusicInterface` | Base interface. Handles cover art, decryption keys, and media dates. |
+| `AppleMusicSongInterface` | Fetches song tags, lyrics, and stream info for a given codec. |
+| `AppleMusicMusicVideoInterface` | Fetches music video tags and selects the appropriate stream. |
+| `AppleMusicUploadedVideoInterface` | Fetches post video metadata and stream URL. |
+
+### `gamdl.downloader`
+
+| Class | Description |
+| --- | --- |
+| `AppleMusicBaseDownloader` | Shared downloader state: output paths, temp paths, CDM setup, tagging, binary tool paths. |
+| `AppleMusicSongDownloader` | Downloads, decrypts, and tags songs. Accepts `codec_priority`, `synced_lyrics_format`, and other song-specific options. |
+| `AppleMusicMusicVideoDownloader` | Downloads and remuxes music videos using FFmpeg or MP4Box. |
+| `AppleMusicUploadedVideoDownloader` | Downloads post videos. |
+| `AppleMusicDownloader` | Top-level orchestrator. Parses URLs via `get_url_info()`, builds a queue via `get_download_queue()`, and downloads each item via `download()`. |
+
+<Tip>
+  Always check `apple_music_api.active_subscription` before downloading. If it returns `False`, the account does not have an active Apple Music subscription and downloads will fail.
+</Tip>
+
+## Customizing downloader behavior
+
+`AppleMusicBaseDownloader` accepts all the same options available on the CLI. For example, to change the output path and codec:
+
+```python
+from gamdl.interface.enums import SongCodec
+
+base_downloader = AppleMusicBaseDownloader(
+    output_path="/my/music",
+    overwrite=True,
+)
+
+song_downloader = AppleMusicSongDownloader(
+    base_downloader=base_downloader,
+    interface=song_interface,
+    codec_priority=[SongCodec.ALAC],
+)
+```
+
+Refer to the `AppleMusicBaseDownloader.__init__` and `AppleMusicSongDownloader.__init__` signatures for the full list of supported parameters.

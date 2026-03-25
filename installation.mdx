@@ -1,0 +1,112 @@
+---
+title: 'Installation'
+description: 'Install Gamdl and its dependencies to start downloading Apple Music content from the command line.'
+keywords: ['gamdl', 'install', 'pip', 'cookies', 'ffmpeg', 'setup']
+---
+
+<Note>
+  An active Apple Music subscription and browser cookies in Netscape format are required to download content. You cannot use Gamdl with a free or trial account.
+</Note>
+
+<Steps>
+  <Step title="Install Python 3.10 or higher">
+    Gamdl requires Python 3.10 or later.
+
+    Check your current version:
+
+    ```bash
+    python --version
+    ```
+
+    If your version is below 3.10, install a newer release:
+
+    - **Official installer**: Download from [python.org/downloads](https://www.python.org/downloads/)
+    - **pyenv** (recommended for managing multiple versions on macOS/Linux):
+
+    ```bash
+    pyenv install 3.12
+    pyenv global 3.12
+    ```
+  </Step>
+
+  <Step title="Install Gamdl">
+    Install Gamdl from PyPI using pip:
+
+    ```bash
+    pip install gamdl
+    ```
+
+    Verify the installation:
+
+    ```bash
+    gamdl --version
+    ```
+
+    This installs the `gamdl` command globally.
+  </Step>
+
+  <Step title="Obtain your Apple Music cookies">
+    Gamdl authenticates with Apple Music using your browser session cookies. You must be logged in to [music.apple.com](https://music.apple.com) with an active subscription when you export them.
+
+    **Firefox** — Install the [Export Cookies](https://addons.mozilla.org/addon/export-cookies-txt) add-on. Navigate to `music.apple.com`, then use the extension to export cookies in Netscape (`.txt`) format.
+
+    **Chrome / Chromium** — Install the [Get cookies.txt LOCALLY](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbgdldlbecc) extension. Navigate to `music.apple.com`, then use the extension to export cookies in Netscape format.
+
+    Once exported, place the file in your working directory as `cookies.txt`:
+
+    ```bash
+    # Gamdl looks for cookies.txt in the current directory by default
+    mv ~/Downloads/cookies.txt ./cookies.txt
+    ```
+
+    Alternatively, specify the path explicitly at runtime:
+
+    ```bash
+    gamdl --cookies-path /path/to/cookies.txt "URL"
+    ```
+
+    <Warning>
+      Cookies expire when your Apple Music session ends or when you log out of the browser. Re-export them if Gamdl reports an authentication error or inactive subscription.
+    </Warning>
+  </Step>
+
+  <Step title="Install optional tools">
+    These tools are not required to download songs in the default AAC 256kbps (`aac-legacy`) codec, but are needed for music videos and faster downloads.
+
+    <CardGroup cols={2}>
+      <Card title="FFmpeg" icon="film" href="https://ffmpeg.org/download.html">
+        Required for remuxing music videos (default `ffmpeg` remux mode) and for the `nm3u8dlre` download mode. Install from [ffmpeg.org/download.html](https://ffmpeg.org/download.html) or via your system package manager:
+
+        ```bash
+        # macOS
+        brew install ffmpeg
+
+        # Debian / Ubuntu
+        sudo apt install ffmpeg
+        ```
+      </Card>
+      <Card title="mp4decrypt" icon="lock-open" href="https://www.bento4.com/downloads/">
+        Part of the Bento4 toolkit. Required for the `mp4box` remux mode and for any non-legacy song codec. Download binaries from [bento4.com/downloads](https://www.bento4.com/downloads/) and add the `mp4decrypt` binary to your `PATH`.
+      </Card>
+      <Card title="MP4Box" icon="box" href="https://gpac.io/downloads/gpac-nightly-builds/">
+        Part of the GPAC toolkit. Required for the `mp4box` remux mode. Download nightly builds from [gpac.io/downloads/gpac-nightly-builds](https://gpac.io/downloads/gpac-nightly-builds/) and add `MP4Box` to your `PATH`.
+      </Card>
+      <Card title="N_m3u8DL-RE" icon="bolt" href="https://github.com/nilaoda/N_m3u8DL-RE/releases/latest">
+        An alternative HLS downloader that is significantly faster than the default `ytdlp` mode. Download the binary for your platform from the [releases page](https://github.com/nilaoda/N_m3u8DL-RE/releases/latest) and add it to your `PATH`.
+      </Card>
+    </CardGroup>
+
+    After installing, confirm each tool is accessible from your `PATH`:
+
+    ```bash
+    ffmpeg -version
+    mp4decrypt --version
+    MP4Box -version
+    N_m3u8DL-RE --version
+    ```
+
+    <Tip>
+      If you install a tool to a non-standard location, use the corresponding CLI flag to point Gamdl to the binary: `--ffmpeg-path`, `--mp4decrypt-path`, `--mp4box-path`, or `--nm3u8dlre-path`.
+    </Tip>
+  </Step>
+</Steps>
